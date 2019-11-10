@@ -3,15 +3,9 @@
 [Ульяновского авиационного колледжа](http://www.uaviak.ru/pages/raspisanie-/#pos1)
 
 ## Установка
-1. Скачиваем библиотеку
-    ```shell script
-    git clone https://github.com/UAviaK-unofficial/UAviaK-Timetable.git
-    cd UAviaK-Timetable
-    ```
-1. Устанавливаем
-    ```shell script
-    python setup.py install
-    ```
+```shell script
+pip3 install uaviak_timetable
+```
 ## Зависимости
  - [requests](https://pypi.org/project/requests/)
  - [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/)
