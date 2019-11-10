@@ -12,13 +12,6 @@ def requirements():
 
     return requirements_list
 
-def get_long_description():
-	"""Чтение README.md"""
-	with open('README.md', 'r', encoding='utf-8') as f:
-		result = f.read()
-
-	return result
-
 
 setup(
     name='uaviak_timetable',
