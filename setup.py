@@ -19,7 +19,7 @@ setup(
     author='Gleb Liutsko',
     author_email='gleb290303@gmail.com',
     license='MIT',
-    url='https://github.com/UAviaK-unofficial/UAviaK-Timetable',
+    url='https://github.com/gleb-liutsko/UAviaK-Timetable',
     keywords='timetable uaviak Ulyanovsk',
     description="Python библиотека для получения расписания",
     packages=find_packages(),
