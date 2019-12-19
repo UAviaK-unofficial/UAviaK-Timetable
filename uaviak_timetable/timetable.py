@@ -52,10 +52,8 @@ class Timetable:
         lines = text.splitlines()
 
         for line in lines:
-            if line == ('-' * 88) or len(line) != 88:
-                continue
-
-            tb.append_lesson(line)
+            if len(line) == 88 and line != ('-' * 88):
+                tb.append_lesson(line)
 
         return tb
 
