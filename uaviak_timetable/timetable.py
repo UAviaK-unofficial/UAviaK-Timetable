@@ -24,6 +24,16 @@ class Timetable:
     def sort(self, attr: str = 'number', reverse: bool = False):
         self.lessons.sort(key=operator.attrgetter(attr), reverse=reverse)
 
+    def list(self, fild):
+        if not fild in Lesson.ATTR:
+            raise ValueError('Not found fild')
+
+        value_filds = set()
+        for lesson in self.lessons:
+            value_filds.add(getattr(lesson, fild))
+
+        return list(value_filds)
+
     def append_lesson(self, lesson: Lesson or str):
         if isinstance(lesson, Lesson):
             self.lessons.append(lesson)

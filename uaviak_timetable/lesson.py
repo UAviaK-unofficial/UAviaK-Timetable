@@ -1,4 +1,15 @@
 class Lesson:
+    ATTR = [
+        'group',
+        'number',
+        'is_splitting',
+        'cabinet',
+        'teacher',
+        'subject',
+        'is_practice',
+        'is_consultations'
+    ]
+
     def __init__(
             self,
             group: str,
