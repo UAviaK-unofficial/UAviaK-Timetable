@@ -1,6 +1,5 @@
 from . import Lesson
 
-import re
 import requests
 import operator
 from bs4 import BeautifulSoup
@@ -18,16 +17,6 @@ class Timetable:
         for lesson in self.lessons:
             for attr in kwargs:
                 if getattr(lesson, attr) == kwargs[attr]:
-                    tb.append_lesson(lesson)
-
-        return tb
-
-    def refind(self, **kwargs):
-        tb = Timetable()
-
-        for lesson in self.lessons:
-            for attr in kwargs:
-                if re.search(kwargs[attr], getattr(lesson, attr)):
                     tb.append_lesson(lesson)
 
         return tb
