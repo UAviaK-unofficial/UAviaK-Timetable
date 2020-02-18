@@ -3,6 +3,7 @@ from . import Lesson
 import requests
 import operator
 from bs4 import BeautifulSoup
+import datetime
 
 
 class Timetable:
@@ -10,6 +11,7 @@ class Timetable:
 
     def __init__(self):
         self.lessons = []
+        self.date = None
 
     def find(self, **kwargs):
         tb = Timetable()
@@ -62,7 +64,11 @@ class Timetable:
         lines = text.splitlines()
 
         for line in lines:
-            if len(line) == 88 and line != ('-' * 88):
+            if tb.date is None and line.strip().startswith('Расписание'):
+                split_line = line.split(' ')
+                split_date = split_line[1].split('.')
+                tb.date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
+            elif len(line) == 88 and line != ('-' * 88):
                 tb.append_lesson(line)
 
         return tb
