@@ -36,13 +36,22 @@ class Timetable:
 
         return list(value_filds)
 
-    def append_lesson(self, lesson: Lesson or str):
+    def append_lesson(self, lesson: Lesson or str or list):
         if isinstance(lesson, Lesson):
             self.lessons.append(lesson)
-        elif isinstance(lesson, str):
+        elif isinstance(lesson, str) or isinstance(lesson, list):
             self.lessons.append(Lesson.parse_line(lesson))
         else:
             raise TypeError()
+
+    @classmethod
+    def is_lesson_line(cls, line: str or list):
+        if isinstance(line, str):
+            line = line.split()
+        if len(line) < 1:
+            return False
+
+        return len(line[0]) >= 2 and line[0][:2].isnumeric()
 
     @classmethod
     def load(cls):
@@ -64,12 +73,12 @@ class Timetable:
         lines = text.splitlines()
 
         for line in lines:
-            if tb.date is None and line.strip().startswith('Расписание'):
-                split_line = line.split(' ')
-                split_date = split_line[1].split('.')
+            splited_line = line.split()
+            if tb.date is None and len(splited_line) > 0 and splited_line[0] == 'Расписание':
+                split_date = splited_line[2].split('.')
                 tb.date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
-            elif len(line) == 88 and line != ('-' * 88):
-                tb.append_lesson(line)
+            elif cls.is_lesson_line(splited_line):
+                tb.append_lesson(splited_line)
 
         return tb
 
