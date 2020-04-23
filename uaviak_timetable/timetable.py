@@ -51,7 +51,7 @@ class Timetable:
         if len(line) < 1:
             return False
 
-        return len(line[0]) >= 2 and line[0][:2].isnumeric()
+        return len(line[0]) >= 2 and line[0][:2].isnumeric() and line[0][-1] != ','
 
     @classmethod
     def load(cls):
