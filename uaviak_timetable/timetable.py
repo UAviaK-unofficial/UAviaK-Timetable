@@ -44,11 +44,30 @@ class Timetable:
         else:
             raise TypeError()
 
+    def _parse_date(self, str_with_date: str or list):
+        if isinstance(str_with_date, str):
+            str_with_date = str_with_date.split()
+
+        # Строка с датой может быть 2 форматов, с предлогом "на", пример
+        #     Расписание на 01.01.1970
+        # и без
+        #     Расписание 01.01.1970
+        if 'на' in str_with_date:
+            str_with_date.remove('на')
+
+        split_date = str_with_date[1].split('.')
+        date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
+        if self._is_new_date(date):
+            self.date = date
+
+    def _is_new_date(self, date):
+        return self.date is None or self.date < date
+
     @classmethod
     def is_lesson_line(cls, line: str or list):
         if isinstance(line, str):
             line = line.split()
-        if len(line) < 1:
+        if len(line) == 0:
             return False
 
         return len(line[0]) >= 2 and line[0][:2].isnumeric() and line[0][-1] != ','
@@ -73,12 +92,14 @@ class Timetable:
         lines = text.splitlines()
 
         for line in lines:
-            splited_line = line.split()
-            if tb.date is None and len(splited_line) > 0 and splited_line[0] == 'Расписание':
-                split_date = splited_line[2].split('.')
-                tb.date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
-            elif cls.is_lesson_line(splited_line):
-                tb.append_lesson(splited_line)
+            split_line = line.split()
+            if len(split_line) == 0:
+                continue
+
+            if split_line[0] == 'Расписание':
+                tb._parse_date(split_line)
+            elif cls.is_lesson_line(split_line):
+                tb.append_lesson(split_line)
 
         return tb
 
