@@ -4,7 +4,7 @@
 
 ## Установка
 ```shell script
-pip3 install uaviak_timetable
+pip install uaviak_timetable
 ```
 ## Зависимости
  - [requests](https://pypi.org/project/requests/)

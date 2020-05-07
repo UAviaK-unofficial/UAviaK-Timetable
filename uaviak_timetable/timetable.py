@@ -14,7 +14,7 @@ class Timetable:
         self.date = None
 
     def find(self, **kwargs):
-        tb = Timetable()
+        tb = self.__class__()
 
         for lesson in self.lessons:
             for attr in kwargs:
