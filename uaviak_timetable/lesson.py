@@ -1,3 +1,10 @@
+import re
+
+
+class ParseLessonError(Exception):
+    pass
+
+
 class Lesson:
     ATTR = [
         'group',
@@ -33,39 +40,22 @@ class Lesson:
         self.is_exam = is_exam
 
     @classmethod
-    def parse_line(cls, line: str or list):
-        if isinstance(line, str):
-            line = line.split()
-
-        is_practice = line[-1] == 'Практика'
-        is_consultations = line[-1] == 'Консульт' or line[-1] == 'Консультация'
-        is_exam = line[-1] == 'Экзамен'
-        if is_practice or is_consultations or is_exam:
-            del line[-1]
-
-        group = line[0]
-        number = int(line[1])
-
-        is_splitting = line[2] == 'дрб'
-        if is_splitting:
-            del line[2]
-
-        cabinet = line[2]
-        if line[3][1::2] == '..':
-            cabinet = ''
-            line.insert(2, '')
-
-        teacher = f'{line[3]} {line[4]}'
-        subject = ' '.join(line[5:])
+    def parse_line(cls, line: str):
+        # 17ам-1  1     Маст.Шакиров И.Г.       Производственная практика                Практика
+        result = re.match(r'(\d{2}\S{1,4})\s+(\d)\s+(дрб)?\s+(\S{1,5})\s*(\S+\s\S\.\S\.)\s+(.+)', line)
+        if not result:
+            raise ParseLessonError('Error parse line lesson', line)
+        re_groups = result.groups()
 
         return cls(
-            group=group,
-            number=number,
-            is_splitting=is_splitting,
-            cabinet=cabinet,
-            teacher=teacher,
-            subject=subject,
-            is_practice=is_practice,
-            is_consultations=is_consultations,
-            is_exam=is_exam
+            group=re_groups[0],
+            number=int(re_groups[1]),
+            is_splitting=re_groups[2] is not None,
+            cabinet=re_groups[3],
+            teacher=re_groups[4],
+            subject=re_groups[5].replace('Практика', '').replace('Консультация', '').replace('Консульт', '').replace(
+                'Экзамен', '').strip(),
+            is_practice=re_groups[5].find('Практика') != -1,
+            is_consultations=re_groups[5].find('Консульт') != -1 or re_groups[5].find('Консультация') != -1,
+            is_exam=re_groups[5].find('Экзамен') != -1
         )

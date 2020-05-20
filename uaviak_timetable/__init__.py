@@ -1,4 +1,4 @@
-from .lesson import Lesson
+from .lesson import Lesson, ParseLessonError
 from .timetable import Timetable
 
-__all__ = ['Lesson', 'Timetable']
+__all__ = ['Lesson', 'Timetable', 'ParseLessonError']

@@ -36,10 +36,10 @@ class Timetable:
 
         return list(value_filds)
 
-    def append_lesson(self, lesson: Lesson or str or list):
+    def append_lesson(self, lesson: Lesson or str):
         if isinstance(lesson, Lesson):
             self.lessons.append(lesson)
-        elif isinstance(lesson, str) or isinstance(lesson, list):
+        elif isinstance(lesson, str):
             self.lessons.append(Lesson.parse_line(lesson))
         else:
             raise TypeError()
@@ -99,7 +99,7 @@ class Timetable:
             if split_line[0] == 'Расписание':
                 tb._parse_date(split_line)
             elif cls.is_lesson_line(split_line):
-                tb.append_lesson(split_line)
+                tb.append_lesson(line)
 
         return tb
 
