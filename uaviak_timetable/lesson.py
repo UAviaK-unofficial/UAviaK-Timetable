@@ -41,8 +41,8 @@ class Lesson:
 
     @classmethod
     def parse_line(cls, line: str):
-        # 17ам-1  1     Маст.Шакиров И.Г.       Производственная практика                Практика
-        result = re.match(r'(\d{2}\S{1,4})\s+(\d)\s+(дрб)?\s+(\S{1,5})\s*(\S+\s\S\.\S\.)\s+(.+)', line)
+        # 17ам-1  1 дрб Маст.Шакиров И.Г.       Производственная практика                Практика
+        result = re.match(r'(\d{2}\S{1,4})\s+(\d)\s+(дрб)?\s*(\S{1,5})\s*(\S+\s\S\.\S\.)\s+(.+)', line)
         if not result:
             raise ParseLessonError('Error parse line lesson', line)
         re_groups = result.groups()
