@@ -1,13 +1,19 @@
-from . import Lesson
+import datetime
+import operator
+import re
 
 import requests
-import operator
 from bs4 import BeautifulSoup
-import datetime
+
+from . import Lesson
 
 
 class Timetable:
     URL_TIMETABLE = 'http://www.uaviak.ru/pages/raspisanie-/'
+    HTML_CLASSES_TIMETABLE = [
+        'scrolling-text pos1',
+        'scrolling-text pos2'
+    ]
 
     def __init__(self):
         self.lessons = []
@@ -15,6 +21,7 @@ class Timetable:
 
     def find(self, **kwargs):
         tb = self.__class__()
+        tb.date = self.date
 
         for lesson in self.lessons:
             for attr in kwargs:
@@ -56,35 +63,29 @@ class Timetable:
             str_with_date.remove('на')
 
         split_date = str_with_date[1].split('.')
-        date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
-        if self._is_new_date(date):
-            self.date = date
-
-    def _is_new_date(self, date):
-        return self.date is None or self.date < date
-
-    @classmethod
-    def is_lesson_line(cls, line: str or list):
-        if isinstance(line, str):
-            line = line.split()
-        if len(line) == 0:
-            return False
-
-        return len(line[0]) >= 2 and line[0][:2].isnumeric() and line[0][-1] != ','
+        self.date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
 
     @classmethod
     def load(cls):
         result = requests.get(Timetable.URL_TIMETABLE)
 
         soap = BeautifulSoup(result.text, "html.parser")
-        soap_timetable = soap.find_all(class_='scrolling-text')[1:]
 
-        table_text = ''
-        for i in soap_timetable:
+        soap_timetables = []
+        for html_class in cls.HTML_CLASSES_TIMETABLE:
+            soap_timetables.append(soap.find(class_=html_class))
+
+        timetables = list()
+        for i in soap_timetables:
             i.find(class_='title').extract()
-            table_text += i.get_text()
+            timetable = cls.__parse_text(i.get_text())
+            timetables.append(timetable)
 
-        return cls.__parse_text(table_text)
+        return sum(*timetables)
+
+    @classmethod
+    def is_lesson_line(cls, line: str):
+        return len(line) != 0 and line[0][:2].isnumeric() and line[0][-1] != ','
 
     @classmethod
     def __parse_text(cls, text: str):
@@ -92,14 +93,16 @@ class Timetable:
         lines = text.splitlines()
 
         for line in lines:
-            split_line = line.split()
-            if len(split_line) == 0:
-                continue
+            # Удаляем лишние пробельные символы
+            line = line.strip()
+            line = re.sub(r'\s{2,}', ' ', line)
 
-            if split_line[0] == 'Расписание':
-                tb._parse_date(split_line)
-            elif cls.is_lesson_line(split_line):
-                tb.append_lesson(line)
+            split_line = line.split()
+            if len(split_line) > 0:
+                if not tb.date and split_line[0] == 'Расписание':
+                    tb._parse_date(split_line)
+                elif cls.is_lesson_line(line):
+                    tb.append_lesson(line)
 
         return tb
 
@@ -114,3 +117,19 @@ class Timetable:
 
     def __repr__(self):
         return str(self.lessons)
+
+    def __add__(self, other: 'Timetable'):
+        def _is_new_date(date):
+            return self.date is None or self.date < date
+
+        sum_timetable = self.__class__()
+
+        sum_timetable.lessons += self.lessons
+        sum_timetable.lessons += other.lessons
+
+        if _is_new_date(other.date):
+            sum_timetable.date = other.date
+        else:
+            sum_timetable.date = self.date
+
+        return sum_timetable

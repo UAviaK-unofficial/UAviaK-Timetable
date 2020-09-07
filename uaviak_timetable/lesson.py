@@ -41,21 +41,38 @@ class Lesson:
 
     @classmethod
     def parse_line(cls, line: str):
-        # 17ам-1  1 дрб Маст.Шакиров И.Г.       Производственная практика                Практика
-        result = re.match(r'(\d{2}\S{1,4})\s+(\d)\s+(дрб)?\s*(\S{1,5})\s*(\S+\s\S\.\S\.)\s+(.+)', line)
+        def subject_proc(subject: str):
+            types_lesson = {
+                'Практика': False,
+                'Консультация': False,
+                'Консульт': False,
+                'Экзамен': False
+            }
+
+            for type_ in types_lesson:
+                if subject.find(type_) != -1:
+                    types_lesson[type_] = True
+                    subject = subject.replace(type_, '').strip()
+
+            return types_lesson['Практика'], \
+                   types_lesson['Консультация'] or types_lesson['Консультация'], \
+                   types_lesson['Экзамен'], \
+                   subject
+
+        result = re.match(r'(\d{2}\S{1,4})\s(\d)\s(дрб)?\s?(\S{1,5})\s?(\S+\s\S\.\S\.)\s+(.+)', line)
         if not result:
             raise ParseLessonError('Error parse line lesson', line)
         re_groups = result.groups()
 
+        is_practice, is_consultations, is_exam, subject = subject_proc(re_groups[5])
         return cls(
             group=re_groups[0],
             number=int(re_groups[1]),
             is_splitting=re_groups[2] is not None,
             cabinet=re_groups[3],
             teacher=re_groups[4],
-            subject=re_groups[5].replace('Практика', '').replace('Консультация', '').replace('Консульт', '').replace(
-                'Экзамен', '').strip(),
-            is_practice=re_groups[5].find('Практика') != -1,
-            is_consultations=re_groups[5].find('Консульт') != -1 or re_groups[5].find('Консультация') != -1,
-            is_exam=re_groups[5].find('Экзамен') != -1
+            subject=subject,
+            is_practice=is_practice,
+            is_consultations=is_consultations,
+            is_exam=is_exam
         )

@@ -18,5 +18,5 @@ finds_table.sort('number')
 
 # Выводим на экран
 for lesson in finds_table:
-    print(f'{lesson.number}) {lesson.subject}')
+    print(f'{lesson.number}) {lesson.subject}{" (Практика)" if lesson.is_practice else ""}')
 print(table.date.strftime('%A %d.%m'))
