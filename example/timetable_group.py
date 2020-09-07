@@ -19,3 +19,4 @@ finds_table.sort('number')
 # Выводим на экран
 for lesson in finds_table:
     print(f'{lesson.number}) {lesson.subject}')
+print(table.date.strftime('%A %d.%m'))
