@@ -68,8 +68,11 @@ class Timetable:
     @classmethod
     def load(cls):
         result = requests.get(Timetable.URL_TIMETABLE)
+        return cls._parse_html_timetable(result.text)
 
-        soap = BeautifulSoup(result.text, "html.parser")
+    @classmethod
+    def _parse_html_timetable(cls, html):
+        soap = BeautifulSoup(html, "html.parser")
 
         soap_timetables = []
         for html_class in cls.HTML_CLASSES_TIMETABLE:
