@@ -81,11 +81,14 @@ class Timetable:
             timetable = cls.__parse_text(i.get_text())
             timetables.append(timetable)
 
-        return sum(*timetables)
+        return timetables[0] + timetables[1]
 
     @classmethod
     def is_lesson_line(cls, line: str):
-        return len(line) != 0 and line[0][:2].isnumeric() and line[0][-1] != ','
+        return len(line) != 0 and \
+               line[0][:2].isnumeric() and \
+               line[0][-1] != ',' and \
+               not line[-1].isnumeric()
 
     @classmethod
     def __parse_text(cls, text: str):
