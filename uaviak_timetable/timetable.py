@@ -1,6 +1,7 @@
 import datetime
 import operator
 import re
+import typing
 
 import requests
 from bs4 import BeautifulSoup
@@ -51,6 +52,11 @@ class Timetable:
         else:
             raise TypeError()
 
+    @classmethod
+    def load(cls):
+        result = requests.get(Timetable.URL_TIMETABLE)
+        return cls._parse_html_timetable(result.text)
+
     def _parse_date(self, str_with_date: str or list):
         if isinstance(str_with_date, str):
             str_with_date = str_with_date.split()
@@ -63,52 +69,64 @@ class Timetable:
             str_with_date.remove('на')
 
         split_date = str_with_date[1].split('.')
-        self.date = datetime.date(day=int(split_date[0]), month=int(split_date[1]), year=int(split_date[2]))
+        self.date = datetime.date(day=int(split_date[0]),
+                                  month=int(split_date[1]),
+                                  year=int(split_date[2]))
 
     @classmethod
-    def load(cls):
-        result = requests.get(Timetable.URL_TIMETABLE)
-        return cls._parse_html_timetable(result.text)
+    def _parse_html_timetable(cls, html: str):
+        def marge_timetables(*timetables):
+            """Слияние 2 и более распиания"""
+            marged_timetable = cls()
+            for timetable in timetables:
+                marged_timetable += timetable
 
-    @classmethod
-    def _parse_html_timetable(cls, html):
+            return marged_timetable
+
+
         soap = BeautifulSoup(html, "html.parser")
 
         soap_timetables = []
         for html_class in cls.HTML_CLASSES_TIMETABLE:
-            soap_timetables.append(soap.find(class_=html_class))
+            soap_timetable = soap.find(class_=html_class)
+            if soap_timetable is not None:
+                soap_timetables.append(soap_timetable)
 
         timetables = list()
         for i in soap_timetables:
             i.find(class_='title').extract()
-            timetable = cls.__parse_text(i.get_text())
+            timetable = cls._parse_text(i.get_text())
             timetables.append(timetable)
 
-        return timetables[0] + timetables[1]
+        return marge_timetables(*timetables)
 
     @classmethod
-    def is_lesson_line(cls, line: str):
-        return len(line) != 0 and \
-               line[0][:2].isnumeric() and \
-               line[0][-1] != ',' and \
-               not line[-1].isnumeric()
+    def _parse_text(cls, text: str):
+        def delete_info_text(lines: typing.List[str]) -> typing.List[str]:
+            """Удаляет строки с дополнитльной информацией, которые идут перед расписанием, а так же разделители между
+            расписанием групп."""
+            timetable_lines = []
+            is_began_timetable = False
 
-    @classmethod
-    def __parse_text(cls, text: str):
+            for line in lines:
+                if re.match(r'^-+$', line):
+                    is_began_timetable = True
+                elif is_began_timetable:
+                    timetable_lines.append(line)
+
+            return timetable_lines
+
         tb = cls()
-        lines = text.splitlines()
+        lines = [s for s in text.splitlines() if s.strip() != '']
 
-        for line in lines:
-            # Удаляем лишние пробельные символы
-            line = line.strip()
+        # Дата находится в первой строке в формате
+        # "Расписание 31.10.2020 Суббота (Заочное отделение)"
+        tb._parse_date(lines.pop(0))
+        timetable_lines = delete_info_text(lines)
+
+        for line in timetable_lines:
             line = re.sub(r'\s{2,}', ' ', line)
-
-            split_line = line.split()
-            if len(split_line) > 0:
-                if not tb.date and split_line[0] == 'Расписание':
-                    tb._parse_date(split_line)
-                elif cls.is_lesson_line(line):
-                    tb.append_lesson(line)
+            tb.append_lesson(line)
 
         return tb
 

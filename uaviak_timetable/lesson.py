@@ -76,3 +76,6 @@ class Lesson:
             is_consultations=is_consultations,
             is_exam=is_exam
         )
+
+    def __repr__(self):
+        return f'<{self.group} {self.subject}>'
