@@ -57,9 +57,8 @@ class Timetable:
         result = requests.get(Timetable.URL_TIMETABLE)
         return cls._parse_html_timetable(result.text)
 
-    def _parse_date(self, str_with_date: str or list):
-        if isinstance(str_with_date, str):
-            str_with_date = str_with_date.split()
+    def _parse_date(self, str_with_date: str):
+        str_with_date = str_with_date.split()
 
         # Строка с датой может быть 2 форматов, с предлогом "на", пример
         #     Расписание на 01.01.1970
