@@ -12,11 +12,11 @@ else:
 table = Timetable.load()
 
 # Ищем `Lesson` для группы `group`
-finds_table = table.find(group=group)
+finds_table = table[1].find(group=group)
 # Сортируем по порядку
 finds_table.sort('number')
 
 # Выводим на экран
 for lesson in finds_table:
     print(f'{lesson.number}) {lesson.subject}{" (Практика)" if lesson.is_practice else ""}')
-print(table.date.strftime('%A %d.%m'))
+print(table[1].date.strftime('%A %d.%m'))

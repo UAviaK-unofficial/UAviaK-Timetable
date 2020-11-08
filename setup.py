@@ -15,7 +15,7 @@ def requirements():
 
 setup(
     name='uaviak_timetable',
-    version='1.6.4',
+    version='1.7.0',
     author='Gleb Liutsko',
     author_email='gleb290303@gmail.com',
     license='MIT',

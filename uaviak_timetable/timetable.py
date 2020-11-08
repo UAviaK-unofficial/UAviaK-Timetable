@@ -7,18 +7,25 @@ import requests
 from bs4 import BeautifulSoup
 
 from . import Lesson
+import enum
+
+
+class Department(enum.Enum):
+    FULL_TIME = enum.auto()
+    CORRESPONDENCE = enum.auto()
 
 
 class Timetable:
     URL_TIMETABLE = 'http://www.uaviak.ru/pages/raspisanie-/'
-    HTML_CLASSES_TIMETABLE = [
-        'scrolling-text pos1',
-        'scrolling-text pos2'
-    ]
+    HTML_CLASSES_TIMETABLE = {
+        'scrolling-text pos1': Department.CORRESPONDENCE,
+        'scrolling-text pos2': Department.FULL_TIME
+    }
 
     def __init__(self):
         self.lessons = []
         self.date = None
+        self.department = None
 
     def find(self, **kwargs):
         tb = self.__class__()
@@ -74,30 +81,19 @@ class Timetable:
 
     @classmethod
     def _parse_html_timetable(cls, html: str):
-        def marge_timetables(*timetables):
-            """Слияние 2 и более распиания"""
-            marged_timetable = cls()
-            for timetable in timetables:
-                marged_timetable += timetable
-
-            return marged_timetable
-
-
         soap = BeautifulSoup(html, "html.parser")
 
-        soap_timetables = []
-        for html_class in cls.HTML_CLASSES_TIMETABLE:
+        timetables = list()
+        for html_class, department in cls.HTML_CLASSES_TIMETABLE.items():
             soap_timetable = soap.find(class_=html_class)
             if soap_timetable is not None:
-                soap_timetables.append(soap_timetable)
+                soap_timetable.find(class_='title').extract()
 
-        timetables = list()
-        for i in soap_timetables:
-            i.find(class_='title').extract()
-            timetable = cls._parse_text(i.get_text())
-            timetables.append(timetable)
+                timetable = cls._parse_text(soap_timetable.get_text())
+                timetable.department = department
+                timetables.append(timetable)
 
-        return marge_timetables(*timetables)
+        return timetables
 
     @classmethod
     def _parse_text(cls, text: str):
@@ -140,19 +136,3 @@ class Timetable:
 
     def __repr__(self):
         return str(self.lessons)
-
-    def __add__(self, other: 'Timetable'):
-        def _is_new_date(date):
-            return self.date is None or self.date < date
-
-        sum_timetable = self.__class__()
-
-        sum_timetable.lessons += self.lessons
-        sum_timetable.lessons += other.lessons
-
-        if _is_new_date(other.date):
-            sum_timetable.date = other.date
-        else:
-            sum_timetable.date = self.date
-
-        return sum_timetable
