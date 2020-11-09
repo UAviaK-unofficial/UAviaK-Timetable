@@ -74,10 +74,11 @@ class Timetable:
         if 'на' in str_with_date:
             str_with_date.remove('на')
 
-        split_date = str_with_date[1].split('.')
-        self.date = datetime.date(day=int(split_date[0]),
-                                  month=int(split_date[1]),
-                                  year=int(split_date[2]))
+        if len(str_with_date) > 3:
+            split_date = str_with_date[1].split('.')
+            self.date = datetime.date(day=int(split_date[0]),
+                                      month=int(split_date[1]),
+                                      year=int(split_date[2]))
 
     @classmethod
     def _parse_html_timetable(cls, html: str):
