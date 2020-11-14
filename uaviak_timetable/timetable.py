@@ -10,7 +10,7 @@ from . import Lesson
 import enum
 
 
-class Department(enum.Enum):
+class Department(enum.IntEnum):
     FULL_TIME = enum.auto()
     CORRESPONDENCE = enum.auto()
 
