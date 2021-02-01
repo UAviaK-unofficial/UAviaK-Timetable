@@ -16,7 +16,7 @@ class Department(enum.IntEnum):
 
 
 class Timetable:
-    URL_TIMETABLE = 'http://www.uaviak.ru/pages/raspisanie-/'
+    URL_TIMETABLE = 'https://www.uaviak.ru/pages/raspisanie-/'
     HTML_CLASSES_TIMETABLE = {
         'scrolling-text pos1': Department.CORRESPONDENCE,
         'scrolling-text pos2': Department.FULL_TIME
@@ -60,7 +60,7 @@ class Timetable:
             raise TypeError()
 
     @classmethod
-    def load(cls):
+    def load(cls) -> typing.List['Timetable']:
         result = requests.get(Timetable.URL_TIMETABLE)
         return cls._parse_html_timetable(result.text)
 
@@ -81,7 +81,7 @@ class Timetable:
                                       year=int(split_date[2]))
 
     @classmethod
-    def _parse_html_timetable(cls, html: str):
+    def _parse_html_timetable(cls, html: str) -> typing.List['Timetable']:
         soap = BeautifulSoup(html, "html.parser")
 
         timetables = list()
